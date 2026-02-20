@@ -4,3 +4,6 @@ flask
 seaborn
 setuptools
 scikit-learn
+xgboost 
+catboost
+lightgbm
