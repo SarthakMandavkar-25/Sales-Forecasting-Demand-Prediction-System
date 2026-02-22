@@ -13,6 +13,9 @@ from src.components.data_transformation import DataTransformation
 from src.components.model_trainer import ModelTrainerConfig
 from src.components.model_trainer import ModelTrainer
 
+from src.components.model_evaluation import ModelEvaluationConfig
+from src.components.model_evaluation import ModelEvaluation
+
 @dataclass 
 class DataIngestionConfig:
     raw_data_path : str = os.path.join("artifacts", "data.csv")
@@ -63,4 +66,7 @@ if __name__ == "__main__":
     train_arr, test_arr, _ = data_transformation.initiate_data_transformation(train_data, test_data)
 
     modeltrainer = ModelTrainer()
-    print(modeltrainer.initiate_model_trainer(train_arr, test_arr))
+    best_model, X_test, y_test, r2_square = modeltrainer.initiate_model_trainer(train_arr, test_arr)
+
+    model_evaluation = ModelEvaluation()
+    metrics = model_evaluation.initiate_model_evaluation(best_model, X_test, y_test)

@@ -12,8 +12,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import AdaBoostRegressor
 from xgboost import XGBRegressor
-from lightgbm import LGBMRegressor
-from catboost import CatBoostRegressor
+
+# from catboost import CatBoostRegressor
 
 from sklearn.metrics import r2_score, accuracy_score
 
@@ -43,8 +43,8 @@ class ModelTrainer:
                 "Gradient Boosting"  : GradientBoostingRegressor(),
                 "AdaBoost Regressor" : AdaBoostRegressor(),
                 "XGBRegressor"       : XGBRegressor(),
-                "CatBoost Regressor" : CatBoostRegressor(verbose=0),
-                "LightGBM"           : LGBMRegressor(verbose=-1)
+                # "CatBoost Regressor" : ,
+                # "LightGBM"
             }
             
 #  HyperParameters 
@@ -65,16 +65,16 @@ class ModelTrainer:
                     'learning_rate': [.1, .01, 0.5, .001],
                     'n_estimators': [8, 16, 32, 64, 128, 256]
                 },
-                "CatBoost Regressor": {          
-                    'iterations': [100, 200],
-                    'learning_rate': [0.01, 0.05, 0.1],
-                    'depth': [4, 6, 8]
-                },
-                "LightGBM": {                    
-                    'n_estimators': [100, 200],
-                    'learning_rate': [0.01, 0.05, 0.1],
-                    'num_leaves': [20, 31, 50]
-                }
+                # "CatBoost Regressor": {          
+                #     'iterations': [100, 200],
+                #     'learning_rate': [0.01, 0.05, 0.1],
+                #     'depth': [4, 6, 8]
+                # },
+                # "LightGBM": {                    
+                #     'n_estimators': [100, 200],
+                #     'learning_rate': [0.01, 0.05, 0.1],
+                #     'num_leaves': [20, 31, 50]
+                # }
             }
 
             model_report : dict = evaluate_models(X_train=X_train, X_test=X_test,
@@ -104,7 +104,7 @@ class ModelTrainer:
 
             r2_square = r2_score(y_test, predicted)
 
-            return r2_square
+            return best_model, X_test, y_test, r2_square
 
         except Exception as e:
             raise CustomException(e, sys)
