@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales Forecasting & Demand Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #040b14;
+      --surface:   #081220;
+      --card:      #0c1a2e;
+      --border:    #112240;
+      --accent:    #00e5ff;
+      --accent2:   #0070f3;
+      --accent3:   #7928ca;
+      --success:   #00ffb3;
+      --text:      #cdd9e5;
+      --muted:     #4a6180;
+      --label:     #8ab4d4;
+      --white:     #f0f6fc;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      font-family: 'DM Mono', monospace;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND MESH ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% 0%,   rgba(0,229,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 100%,  rgba(0,112,243,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 50% 50%,   rgba(121,40,202,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(4,11,20,0.85);
+      backdrop-filter: blur(12px);
+      animation: slideDown 0.6s ease both;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--white);
+      letter-spacing: -0.3px;
+    }
+
+    .logo-text span { color: var(--accent); }
+
+    .header-badge {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(0,229,255,0.08);
+      border: 1px solid rgba(0,229,255,0.2);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 3.5rem 2rem 2.5rem;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      margin-top: 1rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      max-width: 520px;
+      margin-inline: auto;
+      line-height: 1.7;
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 1px;
+      max-width: 700px;
+      margin: 2rem auto 0;
+      background: var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .stat {
+      flex: 1;
+      background: var(--card);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-lbl {
+      font-size: 0.6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── MAIN CONTAINER ── */
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 1100px;
+      margin: 2.5rem auto 4rem;
+      padding: 0 1.5rem;
+    }
+
+    /* ── SECTION HEADERS ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .section-icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--label);
+    }
+
+    .section-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem;
+      margin-bottom: 1.2rem;
+      transition: border-color 0.3s ease;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .card:hover { border-color: rgba(0,229,255,0.2); }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    }
+
+    /* ── FORM FIELDS ── */
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .field label {
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--label);
+      font-weight: 500;
+    }
+
+    .field input,
+    .field select {
+      background: rgba(8,18,32,0.8);
+      border: 1px solid var(--border);
+      color: var(--white);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+      -webkit-appearance: none;
+      width: 100%;
+    }
+
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%234a6180' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.9rem center;
+      padding-right: 2.2rem;
+      cursor: pointer;
+    }
+
+    .field select option {
+      background: #0c1a2e;
+      color: var(--white);
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.08), 0 0 12px rgba(0,229,255,0.05);
+      background: rgba(0,229,255,0.03);
+    }
+
+    .field input::placeholder { color: var(--muted); }
+
+    /* ── SUBMIT BUTTON ── */
+    .submit-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .btn-predict {
+      position: relative;
+      padding: 1rem 3.5rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.3s;
+      box-shadow: 0 0 30px rgba(0,229,255,0.25), 0 4px 20px rgba(0,112,243,0.3);
+    }
+
+    .btn-predict::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .btn-predict:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px rgba(0,229,255,0.4), 0 8px 30px rgba(0,112,243,0.4);
+    }
+
+    .btn-predict:hover::before { opacity: 1; }
+    .btn-predict:active { transform: translateY(0); }
+
+    /* ── RESULT CARD ── */
+    .result-card {
+      position: relative;
+      z-index: 10;
+      max-width: 560px;
+      margin: 0 auto 3rem;
+      background: var(--card);
+      border: 1px solid rgba(0,229,255,0.3);
+      border-radius: 18px;
+      padding: 2.5rem;
+      text-align: center;
+      overflow: hidden;
+      animation: resultPop 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,229,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .result-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 60%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .result-eyebrow {
+      font-size: 0.6rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .result-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--label);
+      margin-bottom: 0.5rem;
+    }
+
+    .result-value {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--success));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      filter: drop-shadow(0 0 20px rgba(0,229,255,0.4));
+    }
+
+    .result-unit {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+    }
+
+    .result-bars {
+      margin-top: 1.75rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+      height: 40px;
+      justify-content: center;
+    }
+
+    .result-bar {
+      width: 6px;
+      border-radius: 3px;
+      background: linear-gradient(to top, var(--accent2), var(--accent));
+      animation: barGrow 0.8s ease both;
+    }
+
+    @keyframes barGrow {
+      from { transform: scaleY(0); transform-origin: bottom; }
+      to   { transform: scaleY(1); transform-origin: bottom; }
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes resultPop {
+      from { opacity: 0; transform: scale(0.85) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Stagger cards */
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.10s; }
+    .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:nth-child(4) { animation-delay: 0.20s; }
+    .card:nth-child(5) { animation-delay: 0.25s; }
+    .card:nth-child(6) { animation-delay: 0.30s; }
+    .card:nth-child(7) { animation-delay: 0.35s; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* ── TOOLTIP HELPER ── */
+    .field-hint {
+      font-size: 0.6rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+
+    /* ── DIVIDER ── */
+    .section-gap { margin-top: 2rem; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">📈</div>
+    <div class="logo-text">Fore<span>cast</span>IQ</div>
+  </div>
+  <div class="header-badge">AI · Demand Engine v2.0</div>
+</header>
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<section class="hero">
+  <div class="hero-eyebrow">Powered by Machine Learning</div>
+  <h1>Sales Forecasting &amp;<br/><span>Demand Prediction</span></h1>
+  <p>Enter your store, product, and market parameters to generate an accurate real-time sales prediction using our trained ML model.</p>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val">29</div><div class="stat-lbl">Input Features</div></div>
+    <div class="stat"><div class="stat-val">7</div><div class="stat-lbl">Data Categories</div></div>
+    <div class="stat"><div class="stat-val">ML</div><div class="stat-lbl">Powered Model</div></div>
+    <div class="stat"><div class="stat-val">Real-time</div><div class="stat-lbl">Prediction</div></div>
+  </div>
+</section>
+
+<!-- ══════════════════ RESULT (Jinja2) ══════════════════ -->
+{% if results is defined and results != None %}
+<div class="container" style="padding-bottom:0; margin-bottom:0;">
+  <div class="result-card">
+    <div class="result-eyebrow">⚡ Prediction Complete</div>
+    <div class="result-label">Predicted Sales Volume</div>
+    <div class="result-value">{{ results }}</div>
+    <div class="result-unit">UNITS / REVENUE FORECAST</div>
+    <div class="result-bars">
+      {% for h in [0.3,0.5,0.7,0.9,1.0,0.85,0.65,0.45,0.55,0.75,0.95,0.8] %}
+      <div class="result-bar" style="height:{{ (h*40)|int }}px; animation-delay:{{ loop.index0 * 0.05 }}s;"></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ══════════════════ FORM ══════════════════ -->
+<div class="container">
+<form action="/predictdata" method="post">
+
+  <!-- 1. DATE & CALENDAR INFO -->
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(0,229,255,0.1);">📅</div>
+    <div class="section-title">Date &amp; Calendar Info</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="card">
+    <div class="grid-4">
+      <div class="field">
+        <label>Year</label>
+        <input type="number" name="year" placeholder="e.g. 2024" min="2000" max="2100" required/>
+      </div>
+      <div class="field">
+        <label>Month</label>
+        <select name="month" required>
+          <option value="" disabled selected>Month</option>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Day</label>
+        <input type="number" name="day" placeholder="1 – 31" min="1" max="31" required/>
+      </div>
+      <div class="field">
+        <label>Quarter</label>
+        <select name="quarter" required>
+          <option value="" disabled selected>Quarter</option>
+          <option value="1">Q1 (Jan–Mar)</option>
+          <option value="2">Q2 (Apr–Jun)</option>
+          <option value="3">Q3 (Jul–Sep)</option>
+          <option value="4">Q4 (Oct–Dec)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Day of Week</label>
+        <select name="day_of_week" required>
+          <option value="" disabled selected>Day</option>
+          <option value="0">Monday</option>
+          <option value="1">Tuesday</option>
+          <option value="2">Wednesday</option>
+          <option value="3">Thursday</option>
+          <option value="4">Friday</option>
+          <option value="5">Saturday</option>
+          <option value="6">Sunday</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Day of Year</label>
+        <input type="number" name="day_of_year" placeholder="1 – 366" min="1" max="366" required/>
+      </div>
+      <div class="field">
+        <label>Week of Year</label>
+        <input type="number" name="week_of_year" placeholder="1 – 53" min="1" max="53" required/>
+      </div>
+      <div class="field">
+        <label>Flags</label>
+        <div style="display:flex; gap:0.5rem; flex-direction:column;">
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer;">
+            <input type="checkbox" name="is_weekend" value="1" id="isWeekend" style="accent-color:var(--accent);width:auto;border:none;padding:0;background:none;"/>
+            Weekend
+          </label>
+          <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer;">
+            <input type="checkbox" name="is_holiday" value="1" id="isHoliday" style="accent-color:var(--accent);width:auto;border:none;padding:0;background:none;"/>
+            Holiday
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. STORE INFORMATION -->
+  <div class="section-header section-gap">
+    <div class="section-icon" style="background:rgba(0,112,243,0.12);">🏪</div>
+    <div class="section-title">Store Information</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="card">
+    <div class="grid-2">
+      <div class="field">
+        <label>Store ID</label>
+        <input type="number" name="store_id" placeholder="e.g. 1, 2, 3, 4" min="1" required/>
+      </div>
+      <div class="field">
+        <label>Store Name</label>
+        <select name="store_name" required>
+          <option value="" disabled selected>Select Store</option>
+          <option value="Store_A">Store A</option>
+          <option value="Store_B">Store B</option>
+          <option value="Store_C">Store C</option>
+          <option value="Store_D">Store D</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PRODUCT DETAILS -->
+  <div class="section-header section-gap">
+    <div class="section-icon" style="background:rgba(121,40,202,0.12);">📦</div>
+    <div class="section-title">Product Details</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="card">
+    <div class="grid-3">
+      <div class="field">
+        <label>Category ID</label>
+        <input type="number" name="category_id" placeholder="e.g. 1 – 5" min="1" max="10" required/>
+      </div>
+      <div class="field">
+        <label>Product Category</label>
+        <select name="product_category" required>
+          <option value="" disabled selected>Select Category</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Home_Goods">Home Goods</option>
+          <option value="Sports">Sports</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Food">Food</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Product Subcategory</label>
+        <select name="product_subcategory" required>
+          <option value="" disabled selected>Select Subcategory</option>
+          <optgroup label="Electronics">
+            <option value="Laptops">Laptops</option>
+            <option value="Phones">Phones</option>
+            <option value="Accessories">Accessories</option>
+          </optgroup>
+          <optgroup label="Home Goods">
+            <option value="Kitchen">Kitchen</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Decor">Decor</option>
+          </optgroup>
+          <optgroup label="Sports">
+            <option value="Footwear">Footwear</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Equipment">Equipment</option>
+          </optgroup>
+          <optgroup label="Clothing">
+            <option value="Tops">Tops</option>
+            <option value="Bottoms">Bottoms</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. PRICING & INVENTORY -->
+  <div class="section-header section-gap">
+    <div class="section-icon" style="background:rgba(0,255,179,0.08);">💰</div>
+    <div class="section-title">Pricing &amp; Inventory</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="card">
+    <div class="grid-3">
+      <div class="field">
+        <label>Base Price ($)</label>
+        <input type="number" name="base_price" placeholder="e.g. 99.99" step="0.01" min="0" required/>
+      </div>
+      <div class="field">
+        <label>Selling Price ($)</label>
+        <input type="number" name="price" placeholder="After discount" step="0.01" min="0" required/>
+      </div>
+      <div class="field">
+        <label>Competitor Price ($)</label>
+        <input type="number" name="competitor_price" placeholder="e.g. 89.99" step="0.01" min="0" required/>
+      </div>
+      <div class="field">
+        <label>Discount (%)</label>
+        <input type="number" name="discount_percentage" placeholder="0 – 100" min="0" max="100" step="0.1" required/>
+      </div>
+      <div class="field">
+        <label>Stock Level</label>
+        <input type="number" name="stock_level" placeholder="Units in stock" min="0" required/>
+      </div>
+      <div class="field">
+        <label>Promotion Active</label>
+        <select name="is_promotion" required>
+          <option value="" disabled selected>Status</option>
+          <option value="1">✅ Yes – On Promotion</option>
+          <option value="0">❌ No – Regular Price</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. WEATHER & ENVIRONMENT -->
+  <div class="section-header section-gap">
+    <div class="section-icon" style="background:rgba(0,229,255,0.08);">🌤️</div>
+    <div class="section-title">Weather &amp; Environment</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="card">
+    <div class="grid-2">
+      <div class="field">
+        <label>Temperature (°F)</label>
+        <input type="number" name="temperature" placeholder="e.g. 72.5" step="0.1" required/>
+        <div class="field-hint">Average daily temperature</div>
+      </div>
+      <div class="field">
+        <label>Precipitation (mm)</label>
+        <input type="number" name="precipitation" placeholder="e.g. 3.5" step="0.01" min="0" required/>
+        <div class="field-hint">Daily rainfall/snowfall</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. ECONOMIC INDICATORS -->
+  <div class="section-header section-gap">
+    <div class="section-icon" style="background:rgba(255,180,0,0.08);">📊</div>
+    <div class="section-title">Economic Indicators</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="card">
+    <div class="grid-3">
+      <div class="field">
+        <label>GDP Growth (%)</label>
+        <input type="number" name="gdp_growth" placeholder="e.g. 2.5" step="0.01" required/>
+        <div class="field-hint">Annual GDP growth rate</div>
+      </div>
+      <div class="field">
+        <label>Unemployment Rate (%)</label>
+        <input type="number" name="unemployment_rate" placeholder="e.g. 5.8" step="0.01" min="0" max="100" required/>
+        <div class="field-hint">Current unemployment %</div>
+      </div>
+      <div class="field">
+        <label>Consumer Confidence</label>
+        <input type="number" name="consumer_confidence" placeholder="e.g. 65.4" step="0.01" required/>
+        <div class="field-hint">Index score (0–100)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. MARKETING & ENGAGEMENT -->
+  <div class="section-header section-gap">
+    <div class="section-icon" style="background:rgba(255,100,150,0.08);">📣</div>
+    <div class="section-title">Marketing &amp; Engagement</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="card">
+    <div class="grid-4">
+      <div class="field">
+        <label>Marketing Spend ($)</label>
+        <input type="number" name="marketing_spend" placeholder="e.g. 500.00" step="0.01" min="0" required/>
+      </div>
+      <div class="field">
+        <label>Website Visits</label>
+        <input type="number" name="website_visits" placeholder="e.g. 1250" min="0" required/>
+      </div>
+      <div class="field">
+        <label>Social Media Engagement</label>
+        <input type="number" name="social_media_engagement" placeholder="e.g. 800" min="0" required/>
+      </div>
+      <div class="field">
+        <label>Customer Footfall</label>
+        <input type="number" name="customer_footfall" placeholder="e.g. 450" min="0" required/>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-wrap">
+    <button type="submit" class="btn-predict">⚡ &nbsp; Generate Prediction</button>
+  </div>
+
+</form>
+</div>
+
+<!-- ══════════════════ SCRIPTS ══════════════════ -->
+<script>
+  // Auto-calculate price from base_price and discount
+  const baseInput  = document.querySelector('[name="base_price"]');
+  const discInput  = document.querySelector('[name="discount_percentage"]');
+  const priceInput = document.querySelector('[name="price"]');
+
+  function calcPrice() {
+    const base = parseFloat(baseInput.value) || 0;
+    const disc = parseFloat(discInput.value) || 0;
+    if (base > 0) priceInput.value = (base * (1 - disc / 100)).toFixed(2);
+  }
+  baseInput.addEventListener('input', calcPrice);
+  discInput.addEventListener('input', calcPrice);
+
+  // Auto-fill date fields from year/month/day
+  function updateDateFields() {
+    const y = parseInt(document.querySelector('[name="year"]').value);
+    const m = parseInt(document.querySelector('[name="month"]').value);
+    const d = parseInt(document.querySelector('[name="day"]').value);
+    if (!y || !m || !d) return;
+    const dt = new Date(y, m - 1, d);
+    if (isNaN(dt.getTime())) return;
+
+    const dow = (dt.getDay() + 6) % 7;
+    document.querySelector('[name="day_of_week"]').value = dow;
+
+    const start = new Date(y, 0, 0);
+    document.querySelector('[name="day_of_year"]').value = Math.floor((dt - start) / 86400000);
+
+    const oneJan = new Date(y, 0, 1);
+    document.querySelector('[name="week_of_year"]').value = Math.ceil((((dt - oneJan) / 86400000) + oneJan.getDay() + 1) / 7);
+
+    document.querySelector('[name="quarter"]').value = Math.ceil(m / 3);
+    document.getElementById('isWeekend').checked = (dow === 5 || dow === 6);
+  }
+  ['year','month','day'].forEach(f => {
+    document.querySelector(`[name="${f}"]`).addEventListener('change', updateDateFields);
+  });
+
+  // Send 0 for unchecked checkboxes
+  document.querySelector('form').addEventListener('submit', function() {
+    if (!document.getElementById('isWeekend').checked) {
+      const h = document.createElement('input');
+      h.type='hidden'; h.name='is_weekend'; h.value='0';
+      this.appendChild(h);
+    }
+    if (!document.getElementById('isHoliday').checked) {
+      const h = document.createElement('input');
+      h.type='hidden'; h.name='is_holiday'; h.value='0';
+      this.appendChild(h);
+    }
+  });
+
+  // Scroll to result
+  const result = document.querySelector('.result-card');
+  if (result) setTimeout(() => result.scrollIntoView({ behavior:'smooth', block:'center' }), 300);
+</script>
+</body>
+</html>
