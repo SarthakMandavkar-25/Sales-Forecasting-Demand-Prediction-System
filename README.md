@@ -45,7 +45,7 @@ sales-forecasting/
 #### Evaluation Metrics
 The system evaluates forecasts using:
 
-- MAE — Mean Absolute Error
-- RMSE — Root Mean Squared Error
-- MAPE — Mean Absolute Percentage Error
-- R² — Coefficient of Determination
+- MAE — Mean Absolute Error.
+- RMSE — Root Mean Squared Error.
+- MAPE — Mean Absolute Percentage Error.
+- R² — Coefficient of Determination.
