@@ -164,7 +164,7 @@ source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Train the model (runs ingestion -> transformation -> training -> evaluation)
-python -m src.pipeline.training_pipeline
+python -m src.components.data_ingestion
 
 # Start the Flask app
 python app.py
