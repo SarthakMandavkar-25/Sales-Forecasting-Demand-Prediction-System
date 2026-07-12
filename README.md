@@ -218,4 +218,4 @@ git push -u origin main
 - Designed a production-style architecture with centralized logging,
   custom exception handling, and reproducible model artifacts.
 - Shipped a Flask web application with a live prediction interface,
-  containerized with Docker for deployment.
+  containerized with Render for deployment.
