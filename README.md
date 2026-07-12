@@ -139,7 +139,7 @@ sales-forecasting/
 | Visualization        | Matplotlib, Seaborn                                             | Trend, seasonality, and correlation analysis in EDA |
 | API / Web App        | Flask                                                           | Lightweight, simple to wire a form to a model |
 | Frontend             | Plain HTML/CSS                                                  | Zero build step |
-| Deployment           | Docker                                                          | Portable, reproducible runtime |
+| Deployment           | Render                                                          | Portable, reproducible runtime |
 
 ---
 
